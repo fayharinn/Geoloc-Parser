@@ -9,4 +9,4 @@ EXIF automated detection and adding geolocation into CSV
 
 `python geolocparser.py`
 
-put the script in the directory you want to analyse. I'll also analyse subdirs
+put the script in the directory you want to analyse. It will also analyse subdirs.
