@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
-from PIL import Image
+# On importe les librairies qu'on va utiliser
+from PIL import Image 
 from PIL.ExifTags import TAGS
 from PIL.ExifTags import GPSTAGS
 import mimetypes
 import os
+
+#=============================
+
+# On défini les fonctions qui seront utiles pour calculer les géolocs=================
 
 def get_exif(filename):
     image = Image.open(filename)
@@ -84,33 +89,38 @@ def getListOfFiles(dirName):
                 
     return allFiles
 
+
+#============================= C'est le début de notre programme ===============
+
 print("============== DOX Geoloc 1.0 ==============")
 print("Extensions to analyse : ")
 print(IMAGE)
 print("Start...")
 print("Getting File Names from the actual directory and subdirs ...")
-onlyfiles = getListOfFiles(path)
-print("Found "+str(len(onlyfiles))+" images")
+onlyfiles = getListOfFiles(path) # on stock la liste des images où on souhaite extraire des données exif dans la variable onlyfiles
+print("Found "+str(len(onlyfiles))+" images") # on affiche la taille de la liste onlyfiles pour dire combien d'images notre fonction a trouvé
 print("Calculating location now ...")
-dico= {}
+dico= {} # on crée un dictionnaire, équivalent à un hashmap de java
+
 for file in onlyfiles:
     
-    try:
+    try: # on teste la ligne en dessous
         exif = get_exif(file)
-    except :
+    except : # s'il y a une erreur dans la récupération des données exif, on skip l'image
         #print("pass "+file)
         continue
 
 
     try:
         geotags = get_geotagging(exif)
-    except ValueError:
+    except ValueError: # s'il y a une erreur dans la récupération des données geotag, on skip l'image
         #print("No exif for "+file)
         continue
     try:
 
-        coordinates = get_coordinates(geotags)
-        if(coordinates != None):
+        coordinates = get_coordinates(geotags) # on appelle la fonction get_coordinates avec pour argument geotags
+        if(coordinates != None): # si on a bien récupéré des coordonnées, donc que la variable coordinates est diff de None, on ajoute les coordonnées dans notre dico
+            # rappel : dico équivalent à une table de hachage
             dico[file]= coordinates
     except:
         pass
@@ -123,9 +133,10 @@ print("========================================================")
 print("Found "+str(len(onlyfiles))+" images")
 print("Found "+str(len(dico))+" locations")
 
-file = open("output.csv","w")
-file.write("Fichier;Latref;Latitude;Longref;Longitude\n")
-for image in dico:
+# L'analyse étant terminée, on stock les données trouvées dans un fichier CSV
+file = open("output.csv","w") # on crée le fichier output.csv avec open avec comme argument w pour write
+file.write("Fichier;Latref;Latitude;Longref;Longitude\n") # on écrit cette ligne dans le fichier output
+for image in dico: # on parcours notre dictionnaire et on écrit chaque nom d'image + géoloc trouvée dans une ligne
     file.write(image+";;"+str(dico[image][0])+";;"+str(dico[image][1])+"\n")
 file.close()
 print("Result saved as a CSV in output.csv")
